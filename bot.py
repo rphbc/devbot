@@ -18,16 +18,17 @@ async def on_ready():
 
 @client.event
 async def on_member_join(member):
-    channel = member.channel
-    await channel.send(
-        f'{client.user} connected. The power grows within BirminD!')
+    await member.send(
+        f'{member.display_name} connected. The power grows within BirminD!')
 
 
 @client.event
 async def on_message(message):
     if message.author == client.user:
         return
-
+    channel = message.channel
+    message = message.content.lower()
+    print(message)
     brooklyn_99_quotes = [
         'I\'m the human form of the 💯 emoji.',
         'Bingpot!',
@@ -37,18 +38,18 @@ async def on_message(message):
         ),
     ]
 
-    if message.content == '99!':
+    if message == '99!':
         response = random.choice(brooklyn_99_quotes)
-        await message.channel.send(response)
-    if message.content == 'Oi Bot':
-        response = f'Olá {message.author.nick}, seja bem-vindo(a)!'
-        await message.channel.send(response)
-    if message.content == 'Bom dia Bot':
+        await channel.send(response)
+    if message == 'Oi Bot'.lower():
+        response = f'Olá {message.author.display_name}, seja bem-vindo(a)!'
+        await channel.send(response)
+    if message == 'Bom dia Bot'.lower():
         response = f'Bom dia mano.'
-        await message.channel.send(response)
-    if message.content == 'vai tomar no cu bot':
+        await channel.send(response)
+    if message == 'vai tomar no cu bot'.lower():
         response = f'Toma no cú é vitamina, como tu e tuas prima'
-        await message.channel.send(response)
+        await channel.send(response)
 
 
 client.run(TOKEN)
