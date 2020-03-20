@@ -34,7 +34,7 @@ async def on_member_join(member):
 async def on_message(message):
     if message.author == client.user:
         return
-    response = execute_command(routes, message.content)
+    response = await execute_command(routes, message)
     if response:
         await message.channel.send(response)
 

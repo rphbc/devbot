@@ -9,8 +9,8 @@ class Route:
         self.route_regex = rf'{self.route_indicator}{route_name}[\s]+' \
                            rf'(?P<command>.*)$'
 
-    def call_command(self, command):
-        return self.command_class().run_command(command)
+    async def call_command(self, command, message):
+        return await self.command_class(message).run_command(command)
 
     def check_route(self, text):
         match = re.match(self.route_regex, text)
