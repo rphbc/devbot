@@ -3,9 +3,10 @@ from devbot.core.routers import Route
 
 
 def append_devbot_class(routes):
-    routes.append(
-        Route('devbot', DevBot, class_args=(routes, ))
-    )
+    if DevBot not in routes:
+        routes.append(
+            Route('devbot', DevBot, class_args=(routes, ))
+        )
 
 
 async def execute_command(routes, message):
