@@ -1,15 +1,17 @@
 # bot.py
-import os
+
+import random
+import re
 
 import discord
-import random
 from decouple import config
 
-# load_dotenv()
 TOKEN = config('TOKEN')
 
 client = discord.Client()
 
+
+# channel id is 690226588696051796
 
 @client.event
 async def on_ready():
@@ -18,16 +20,17 @@ async def on_ready():
 
 @client.event
 async def on_member_join(member):
-    channel = member.channel
-    await channel.send(
-        f'{client.user} connected. The power grows within BirminD!')
+    await member.send(
+        f'{member.display_name} connected. The power grows within BirminD!')
 
 
 @client.event
 async def on_message(message):
     if message.author == client.user:
         return
-
+    author = message.author
+    channel = message.channel
+    content = message.content.lower()
     brooklyn_99_quotes = [
         'I\'m the human form of the 💯 emoji.',
         'Bingpot!',
@@ -37,18 +40,18 @@ async def on_message(message):
         ),
     ]
 
-    if message.content == '99!':
+    if content == '99!':
         response = random.choice(brooklyn_99_quotes)
-        await message.channel.send(response)
-    if message.content == 'Oi Bot':
-        response = f'Olá {message.author.nick}, seja bem-vindo(a)!'
-        await message.channel.send(response)
-    if message.content == 'Bom dia Bot':
+        await channel.send(response)
+    if content == 'Oi Bot'.lower():
+        response = f'Olá {author.display_name}, seja bem-vindo(a)!'
+        await channel.send(response)
+    if re.search(r'^(bom\s?dia.*?bot)', content):
         response = f'Bom dia mano.'
-        await message.channel.send(response)
-    if message.content == 'vai tomar no cu bot':
+        await channel.send(response)
+    if content == 'vai tomar no cu bot'.lower():
         response = f'Toma no cú é vitamina, como tu e tuas prima'
-        await message.channel.send(response)
+        await channel.send(response)
 
 
 client.run(TOKEN)

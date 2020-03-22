@@ -17,6 +17,8 @@ pytest==5.4.1
 pytest-asyncio==0.10.0
 python-decouple==3.3
 requests==2.23.0
+urllib3==1.25.8
+requests==2.23.0
 six==1.14.0
 urllib3==1.25.8
 wcwidth==0.1.8
