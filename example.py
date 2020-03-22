@@ -1,8 +1,7 @@
 # bot.py
-import os
+import logging
 
 import discord
-import random
 from decouple import config
 
 # load_dotenv()
@@ -11,23 +10,23 @@ from devbot.core.routers import Route
 from devbot.core.runner import execute_command
 
 TOKEN = config('TOKEN')
-
-client = discord.Client()
+logger = logging.getLogger(__name__)
 
 routes = [
     Route('example', GreetCommand)
 ]
 
+client = discord.Client()
+
+
 @client.event
 async def on_ready():
-    print(f'{client.user} connected. The power grows within BirminD!')
+    logger.info(f'{client.user} connected.')
 
 
 @client.event
 async def on_member_join(member):
-    channel = member.channel
-    await channel.send(
-        f'{client.user} connected. The power grows within BirminD!')
+    logger.info(f'{member.name} connected to {member.channel}')
 
 
 @client.event
