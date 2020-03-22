@@ -1,5 +1,7 @@
 import re
 
+from devbot.core.commands import DevBot
+
 
 class Route:
     def __init__(self, route_name, command_class, route_indicator='!',
@@ -21,3 +23,9 @@ class Route:
     def check_route(self, text):
         match = re.match(self.route_regex, text)
         return match.group('command') if match else False
+
+
+def get_devbot_route(*additional_routes):
+    routes = list(additional_routes)
+    routes.append(Route('devbot', DevBot, class_args=(routes,)))
+    return routes

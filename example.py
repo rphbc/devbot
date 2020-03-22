@@ -6,15 +6,16 @@ from decouple import config
 
 # load_dotenv()
 from devbot.commands.greetings import GreetCommand
-from devbot.core.routers import Route
+from devbot.core.routers import Route, get_devbot_route
 from devbot.core.runner import execute_command
 
 TOKEN = config('TOKEN')
 logger = logging.getLogger(__name__)
 
-routes = [
-    Route('example', GreetCommand)
-]
+routes = get_devbot_route(
+    Route('example', GreetCommand),
+)
+
 
 client = discord.Client()
 
