@@ -13,7 +13,7 @@ TOKEN = config('TOKEN')
 logger = logging.getLogger(__name__)
 
 routes = get_devbot_route(
-    Route('example', GreetCommand),
+    Route('greeter', GreetCommand),
 )
 
 

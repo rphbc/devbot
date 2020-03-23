@@ -6,7 +6,8 @@ class GreetCommand(BaseCommand):
     Greets People
     """
     actions = {
-        'say_hi': {'arguments': {'to': {'dtype': 'str'}}}
+        'say_hi': {'arguments': {'to': {'dtype': 'str'}}},
+        'hello': {'arguments': {}}
     }
 
     async def say_hi(self, to):
@@ -20,3 +21,10 @@ class GreetCommand(BaseCommand):
         if to == 'me':
             name = self._message.author.name
         return f'Hello {name}, how are you?'
+
+    async def hello(self):
+        """
+        Greets you back.
+        :return: str
+        """
+        return f'Hello {self._message.author.name}!'
