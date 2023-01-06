@@ -4,6 +4,7 @@ import random
 import re
 import time
 import traceback
+from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from threading import Thread
 
@@ -19,7 +20,7 @@ AUTOR_ID = config('AUTOR_ID', cast=int)
 VOICE_ID = config('VOICE_ID', cast=int)
 WHITELISTED_SERVER_ID = config('WHITELISTED_SERVER_ID')
 TEXT_CHN_ID = config('TEXT_CHN_ID', cast=int)
-
+allowed_mentions = discord.AllowedMentions(everyone=True)
 bot = commands.Bot(command_prefix='$')
 loop = None
 
@@ -77,6 +78,22 @@ async def on_ready():
     # passing it as a variable wasn't working.
     loop = asyncio.get_event_loop()
     loop.run_in_executor(None, schedule_job)
+    asyncio.ensure_future(start_input_loop())
+
+
+async def start_input_loop():
+    loop = asyncio.get_event_loop()
+    channel_txt = bot.get_channel(TEXT_CHN_ID)
+    with ThreadPoolExecutor(1, "AsyncInput") as executor:
+        while True:
+            try:
+                msg = await loop.run_in_executor(executor, input)
+            except EOFError:
+                return
+            await channel_txt.send(
+                msg,
+                allowed_mentions=allowed_mentions
+            )
 
 
 @bot.event
@@ -109,7 +126,7 @@ async def on_message(message):
             'no doubt no doubt no doubt no doubt.'
         ),
     ]
-
+    print("Received Message is ", content)
     if content == '99!':
         response = random.choice(brooklyn_99_quotes)
         await channel.send(response)
@@ -125,6 +142,12 @@ async def on_message(message):
 
     await bot.process_commands(message)  # So that events don't disable commands
 
+async def alert_toto():
+    channel_txt = bot.get_channel(TEXT_CHN_ID)
+    await channel_txt.send(
+        f"@everyone 15 minutos para o Toto Time!! :sunglasses:",
+        allowed_mentions=allowed_mentions
+    )
 
 async def play_toto():
     print("Starting to play toto")
@@ -133,12 +156,17 @@ async def play_toto():
     connection = await channel.connect()
 
     await channel_txt.send(
-        f"IT'S TOTO TIME!!!:sunglasses: :beach_umbrella: :tada:"
+        f"@everyone IT'S TOTO TIME!!!:sunglasses: :beach_umbrella: :tada:",
+        allowed_mentions=allowed_mentions
     )
 
     await asyncio.sleep(2)
-
-    connection.play(discord.FFmpegPCMAudio('Africa.mp3'))
+    connection.play(
+        # discord.FFmpegPCMAudio('metal_toto.mp3'),
+        discord.FFmpegPCMAudio('africa_sm.mpeg'),
+        # discord.FFmpegPCMAudio('toto_june.mpeg'),
+        after=lambda error: connection.play(discord.FFmpegPCMAudio('falou.mp3'))
+    )
 
 
 async def stop_toto():
@@ -152,10 +180,13 @@ def run_task(task):
 
 def schedule_job():
     print("Starting Scheduler")
-    schedule.every().friday.at("18:00").do(
+    schedule.every().day.at("17:45").do(
+        run_task, alert_toto()
+    )
+    schedule.every().day.at("18:00").do(
         run_task, play_toto()
     )
-    schedule.every().friday.at("18:10").do(
+    schedule.every().day.at("18:10").do(
         run_task, stop_toto()
     )
 
