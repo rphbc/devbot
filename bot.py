@@ -179,13 +179,13 @@ def run_task(task):
 
 def schedule_job():
     print("Starting Scheduler")
-    schedule.every().day.at("17:45").do(
+    schedule.every().friday.at("17:45").do(
         run_task, alert_toto()
     )
-    schedule.every().day.at("18:00").do(
+    schedule.every().friday.at("18:00").do(
         run_task, play_toto()
     )
-    schedule.every().day.at("18:10").do(
+    schedule.every().friday.at("18:10").do(
         run_task, stop_toto()
     )
 
