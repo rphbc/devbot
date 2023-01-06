@@ -5,9 +5,6 @@ import re
 import time
 import traceback
 from concurrent.futures import ThreadPoolExecutor
-from functools import partial
-from threading import Thread
-
 import discord
 import schedule
 from discord.ext import commands
@@ -24,6 +21,9 @@ allowed_mentions = discord.AllowedMentions(everyone=True)
 bot = commands.Bot(command_prefix='$')
 loop = None
 
+TOTO_MPEG = config('TOTO_MPEG_PATH')
+FALOU_MP3 = config('FALOU_MP3_PATH')
+
 @bot.command()
 async def play(ctx, arg):
     print(dir(ctx.author))
@@ -32,7 +32,7 @@ async def play(ctx, arg):
         return
 
     if arg == 'toto':
-        bot.voice_clients[0].play(discord.FFmpegPCMAudio('Africa.mpeg'))
+        bot.voice_clients[0].play(discord.FFmpegPCMAudio(TOTO_MPEG))
         # bot.voice_clients[0].play(
         #     discord.FFmpegPCMAudio('Rick Astley - Never Gonna Give You Up.mp3'))
         print(bot.voice_clients[0])
@@ -163,9 +163,9 @@ async def play_toto():
     await asyncio.sleep(2)
     connection.play(
         # discord.FFmpegPCMAudio('metal_toto.mp3'),
-        discord.FFmpegPCMAudio('africa_sm.mpeg'),
+        discord.FFmpegPCMAudio(TOTO_MPEG),
         # discord.FFmpegPCMAudio('toto_june.mpeg'),
-        after=lambda error: connection.play(discord.FFmpegPCMAudio('falou.mp3'))
+        after=lambda error: connection.play(discord.FFmpegPCMAudio(FALOU_MP3))
     )
 
 
