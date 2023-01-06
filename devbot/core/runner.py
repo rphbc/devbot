@@ -1,5 +1,5 @@
-def execute_command(routes, message):
+async def execute_command(routes, message):
     for route in routes:
-        command = route.check_route(message)
+        command = route.check_route(message.content)
         if command:
-            return route.call_command(command)
+            return await route.call_command(command, message)
