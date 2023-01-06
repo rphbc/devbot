@@ -12,7 +12,6 @@ from discord.ext import commands
 from decouple import config
 
 TOKEN = config('TOKEN')
-CHANNEL_ID = config('CHANNEL_ID')
 AUTOR_ID = config('AUTOR_ID', cast=int)
 VOICE_ID = config('VOICE_ID', cast=int)
 WHITELISTED_SERVER_ID = config('WHITELISTED_SERVER_ID')
