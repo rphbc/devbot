@@ -6,6 +6,7 @@ import time
 import traceback
 from concurrent.futures import ThreadPoolExecutor
 import discord
+import pytz
 import schedule
 from discord.ext import commands
 
@@ -179,13 +180,13 @@ def run_task(task):
 
 def schedule_job():
     print("Starting Scheduler")
-    schedule.every().friday.at("17:45").do(
+    schedule.every().friday.at("17:45", pytz.timezone('America/Sao_Paulo')).do(
         run_task, alert_toto()
     )
-    schedule.every().friday.at("18:00").do(
+    schedule.every().friday.at("18:00",  pytz.timezone('America/Sao_Paulo')).do(
         run_task, play_toto()
     )
-    schedule.every().friday.at("18:10").do(
+    schedule.every().friday.at("18:10",  pytz.timezone('America/Sao_Paulo')).do(
         run_task, stop_toto()
     )
 
