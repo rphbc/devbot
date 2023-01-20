@@ -1,5 +1,6 @@
 # bot.py
 import asyncio
+import datetime
 import random
 import re
 import time
@@ -181,13 +182,13 @@ def run_task(task):
 
 def schedule_job():
     print("Starting Scheduler")
-    schedule.every().friday.at("20:45").do(
+    schedule.every().friday.at(config("TOTO_ALERT_AT")).do(
         run_task, alert_toto()
     )
-    schedule.every().friday.at("21:00").do(
+    schedule.every().friday.at(config("TOTO_PLAY_AT")).do(
         run_task, play_toto()
     )
-    schedule.every().friday.at("21:10").do(
+    schedule.every().friday.at(config("TOTO_LEAVE_AT")).do(
         run_task, stop_toto()
     )
 
