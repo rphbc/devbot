@@ -163,9 +163,10 @@ async def play_toto():
     await asyncio.sleep(2)
     connection.play(
         # discord.FFmpegPCMAudio('metal_toto.mp3'),
-        discord.FFmpegPCMAudio(TOTO_MPEG),
+        discord.FFmpegPCMAudio('africa_sm.mpeg'),
         # discord.FFmpegPCMAudio('toto_june.mpeg'),
-        after=lambda error: connection.play(discord.FFmpegPCMAudio(FALOU_MP3))
+        after=lambda error: connection.play(discord.FFmpegPCMAudio(
+            'falou.mp3'))
     )
 
 
@@ -180,13 +181,13 @@ def run_task(task):
 
 def schedule_job():
     print("Starting Scheduler")
-    schedule.every().friday.at("17:45", pytz.timezone('America/Sao_Paulo')).do(
+    schedule.every().friday.at("20:45").do(
         run_task, alert_toto()
     )
-    schedule.every().friday.at("18:00",  pytz.timezone('America/Sao_Paulo')).do(
+    schedule.every().friday.at("21:00").do(
         run_task, play_toto()
     )
-    schedule.every().friday.at("18:10",  pytz.timezone('America/Sao_Paulo')).do(
+    schedule.every().friday.at("21:10").do(
         run_task, stop_toto()
     )
 
