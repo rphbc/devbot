@@ -164,10 +164,10 @@ async def play_toto():
     await asyncio.sleep(2)
     connection.play(
         # discord.FFmpegPCMAudio('metal_toto.mp3'),
-        discord.FFmpegPCMAudio('africa_sm.mpeg'),
+        discord.FFmpegPCMAudio(config("TOTO_MPEG_PATH")),
         # discord.FFmpegPCMAudio('toto_june.mpeg'),
         after=lambda error: connection.play(discord.FFmpegPCMAudio(
-            'falou.mp3'))
+            config("FALOU_MP3_PATH")))
     )
 
 
