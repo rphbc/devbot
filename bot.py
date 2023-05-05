@@ -1,17 +1,20 @@
 # bot.py
 import asyncio
-import datetime
+import os
 import random
 import re
 import time
 import traceback
-from concurrent.futures import ThreadPoolExecutor
+
 import discord
-import pytz
 import schedule
+from decouple import Config, RepositoryEnv, AutoConfig
 from discord.ext import commands
 
-from decouple import config
+config = AutoConfig()
+if os.environ.get("ENV"):
+    config = Config(RepositoryEnv(os.environ.get("ENV", '.env')))
+
 
 TOKEN = config('TOKEN')
 AUTOR_ID = config('AUTOR_ID', cast=int)
@@ -19,26 +22,30 @@ VOICE_ID = config('VOICE_ID', cast=int)
 WHITELISTED_SERVER_ID = config('WHITELISTED_SERVER_ID')
 TEXT_CHN_ID = config('TEXT_CHN_ID', cast=int)
 allowed_mentions = discord.AllowedMentions(everyone=True)
-bot = commands.Bot(command_prefix='$')
+intents = discord.Intents.default()
+intents.message_content=True
+bot = commands.Bot(intents=intents, command_prefix='$')
 loop = None
 
 TOTO_MPEG = config('TOTO_MPEG_PATH')
 FALOU_MP3 = config('FALOU_MP3_PATH')
 
+
 @bot.command()
 async def play(ctx, arg):
-    print(dir(ctx.author))
     if not bot.voice_clients:
         await ctx.send("No voice channel to play ;_;")
         return
 
     if arg == 'toto':
-        bot.voice_clients[0].play(discord.FFmpegPCMAudio(TOTO_MPEG))
-        # bot.voice_clients[0].play(
-        #     discord.FFmpegPCMAudio('Rick Astley - Never Gonna Give You Up.mp3'))
-        print(bot.voice_clients[0])
-        await ctx.send(f"IT'S TOTO TIME!!!:sunglasses: :beach_umbrella: :tada:")
-        await ctx.send(f"Playing {arg}")
+        source = discord.PCMVolumeTransformer(
+            discord.FFmpegPCMAudio(TOTO_MPEG)
+        )
+        ctx.voice_client.play(source)
+        await ctx.send(
+            f"IT'S TOTO TIME!!!:sunglasses: :beach_umbrella: :tada:"
+        )
+
     elif arg == 'roda':
         bot.voice_clients[0].play(discord.FFmpegPCMAudio(
             'Pra_Ganhar_e_So_Rodar_Bau_da_Felicidade_-_Musica_tema_Original_Completa_50k.mp3'))
@@ -51,6 +58,22 @@ async def play(ctx, arg):
         await ctx.send(f"No music called {arg}")
 
 
+@play.before_invoke
+async def ensure_voice(ctx):
+    if ctx.voice_client is None:
+        if ctx.author.voice:
+            await ctx.author.voice.channel.connect(timeout=3)
+        else:
+            await ctx.send("You are not connected to a voice channel.")
+            raise commands.CommandError(
+                "Author not connected to a voice channel."
+            )
+    elif ctx.voice_client.is_playing():
+        ctx.voice_client.stop()
+
+    print("Voice Connected")
+
+
 @bot.command()
 async def stop(ctx):
     bot.voice_clients[0].stop()
@@ -61,7 +84,7 @@ async def stop(ctx):
 async def join(ctx):
     channel = ctx.author.voice.channel
     print(f"Joining Channel = {channel.id}")
-    await channel.connect()
+    await channel.connect(reconnect=True)
 
 
 @bot.command()
@@ -78,30 +101,14 @@ async def on_ready():
     # Set loop as global variable, so it can be used by scheduler
     # passing it as a variable wasn't working.
     loop = asyncio.get_event_loop()
-    loop.run_in_executor(None, schedule_job)
-    asyncio.ensure_future(start_input_loop())
-
-
-async def start_input_loop():
-    loop = asyncio.get_event_loop()
-    channel_txt = bot.get_channel(TEXT_CHN_ID)
-    with ThreadPoolExecutor(1, "AsyncInput") as executor:
-        while True:
-            try:
-                msg = await loop.run_in_executor(executor, input)
-            except EOFError:
-                return
-            await channel_txt.send(
-                msg,
-                allowed_mentions=allowed_mentions
-            )
+    # loop.run_in_executor(None, schedule_job)
+    loop.create_task(play_toto())
 
 
 @bot.event
 async def on_member_join(member):
     await member.send(
         f'{member.display_name} connected. The power grows within BirminD!')
-
 
 
 @bot.event
@@ -141,7 +148,9 @@ async def on_message(message):
         response = f'Toma no cú é vitamina, como tu e tuas prima'
         await channel.send(response)
 
-    await bot.process_commands(message)  # So that events don't disable commands
+    await bot.process_commands(
+        message)  # So that events don't disable commands
+
 
 async def alert_toto():
     channel_txt = bot.get_channel(TEXT_CHN_ID)
@@ -149,6 +158,7 @@ async def alert_toto():
         f"@everyone 15 minutos para o Toto Time!! :sunglasses:",
         allowed_mentions=allowed_mentions
     )
+
 
 async def play_toto():
     print("Starting to play toto")
@@ -161,19 +171,40 @@ async def play_toto():
         allowed_mentions=allowed_mentions
     )
 
+    queue = [
+        config("TOTO_MPEG_PATH"),
+        config("FALOU_MP3_PATH")
+    ]
+
     await asyncio.sleep(2)
-    connection.play(
-        # discord.FFmpegPCMAudio('metal_toto.mp3'),
-        discord.FFmpegPCMAudio(config("TOTO_MPEG_PATH")),
-        # discord.FFmpegPCMAudio('toto_june.mpeg'),
-        after=lambda error: connection.play(discord.FFmpegPCMAudio(
-            config("FALOU_MP3_PATH")))
-    )
+    while connection.is_playing() or len(queue) > 0:
+        if connection.is_playing():
+            await asyncio.sleep(0.3)
+            continue
+        source = queue.pop(0)
+        connection.play(
+            discord.FFmpegPCMAudio(source),
+            after=lambda e: print(f'Player error: {e}') if e else None
+        )
+        print("Playing "+ source)
+
+    connection.stop()
+    await connection.disconnect()
+
+    # connection.play(
+    #     # discord.FFmpegPCMAudio('metal_toto.mp3'),
+    #     discord.FFmpegPCMAudio(config("TOTO_MPEG_PATH")),
+    #     # discord.FFmpegPCMAudio('toto_june.mpeg'),
+    #     after=lambda error: connection.play(
+    #         discord.FFmpegPCMAudio(config("FALOU_MP3_PATH")),
+    #         after=lambda error: connection.stop()
+    #     ),
+    # )
+
 
 
 async def stop_toto():
-    bot.voice_clients[0].stop()
-    await bot.voice_clients[0].disconnect()
+    await bot.voice_clients[0].disconnect(force=True)
 
 
 def run_task(task):
